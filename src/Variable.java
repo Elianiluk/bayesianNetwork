@@ -25,7 +25,7 @@ class Variable {
     void addChile(Variable c){
         childs.add(c);
     }
-
+    //elian
     String getName(){
         return this.name;
     }
