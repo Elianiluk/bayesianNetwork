@@ -32,9 +32,17 @@ class Variable {
 
     @Override
     public String toString() {
+        String child="";
+        for (Variable v:childs)
+            child+=v.name;
+        String parent="";
+        for (Variable v1:parents)
+            parent+=v1.name;
         return "Variable{" +
                 "name='" + name + '\'' +
-                ", outcomes=" + outcomes +
+                ", outcomes=" + outcomes + ",childs=["+child+"]"+",parents=["+parent+"]"+
+//                ", childs="+childs.toString()+
+//                ", parents="+parents.toString()+
                 '}';
     }
 }

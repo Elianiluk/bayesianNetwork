@@ -46,14 +46,22 @@ public class XMLReaderExample {
 
                     NodeList givenList = definitionElement.getElementsByTagName("GIVEN");
                     for (int j = 0; j < givenList.getLength(); j++) {
-//                        Variable var;
-                        for (int l=0;i<variables.size();l++){
-                            Variable var= variables.get(l);
-                            definition.addGiven(var);
-                            break;
+                        Variable var1=null;
+                        Variable var2=null;
+
+                        for(Variable v:variables){
+                            if(v.name.equals(forVar)) {
+                                var1 = v;
+                                break;
+                            }
                         }
-
-
+                        for (Variable v2:variables){
+                            if (v2.name.equals(givenList.item(j).getTextContent())){
+                                var2=v2;
+                                break;
+                            }
+                        }
+                        definition.addGiven(givenList.item(j).getTextContent(),var1,var2);
                     }
 
                     String table = definitionElement.getElementsByTagName("TABLE").item(0).getTextContent();
