@@ -67,6 +67,13 @@ public class XMLReaderExample {
                     String table = definitionElement.getElementsByTagName("TABLE").item(0).getTextContent();
                     definition.setTable(table);
 
+                    for (Variable v : variables) {
+                        if (v.name.equals(forVar)) {
+                            v.setTable(table); // Set the probability table for the variable
+                            break;
+                        }
+                    }
+
                     definitions.add(definition);
                 }
             }

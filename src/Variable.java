@@ -10,8 +10,11 @@ class Variable {
     List<Variable> parents = new ArrayList<>();
     List<Variable> childs = new ArrayList<>();
 
+    ArrayList<Double> table= new ArrayList<>();
+
     Variable(String name) {
         this.name = name;
+//        this.table="";
     }
 
     void addOutcome(String outcome) {
@@ -30,6 +33,13 @@ class Variable {
         return this.name;
     }
 
+    void setTable(String table) {
+        String[] values = table.split(" ");
+        for (String value : values) {
+            this.table.add(Double.parseDouble(value));
+        }
+    }
+
     @Override
     public String toString() {
         String child="";
@@ -43,6 +53,7 @@ class Variable {
                 ", outcomes=" + outcomes + ",childs=["+child+"]"+",parents=["+parent+"]"+
 //                ", childs="+childs.toString()+
 //                ", parents="+parents.toString()+
+                this.table.toString()+
                 '}';
     }
 }
