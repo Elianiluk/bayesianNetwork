@@ -59,7 +59,7 @@ public class XMLReaderExample {
                             if (v2.name.equals(givenList.item(j).getTextContent())){
                                 var2=v2;
                                 break;
-                            }
+                             }
                         }
                         definition.addGiven(givenList.item(j).getTextContent(),var1,var2);
                     }
