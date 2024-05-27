@@ -4,8 +4,18 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class XMLReaderExample {
     public static void main(String[] args) {
+        ArrayList<Variable> variables=readFromXml();
+        for(int i=0;i<variables.size();i++)
+            System.out.println(variables.get(i));
+
+
+    }
+
+    public static ArrayList<Variable> readFromXml() {
+        ArrayList<Variable> variables = null;
         try {
             File inputFile = new File("C:\\Users\\elian\\IdeaProjects\\AIProject\\src\\alarm_net.xml");
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -14,7 +24,7 @@ public class XMLReaderExample {
             doc.getDocumentElement().normalize();
 
             NodeList variableList = doc.getElementsByTagName("VARIABLE");
-            List<Variable> variables = new ArrayList<>();
+            variables = new ArrayList<>();
 
             for (int i = 0; i < variableList.getLength(); i++) {
                 Node variableNode = variableList.item(i);
@@ -46,22 +56,22 @@ public class XMLReaderExample {
 
                     NodeList givenList = definitionElement.getElementsByTagName("GIVEN");
                     for (int j = 0; j < givenList.getLength(); j++) {
-                        Variable var1=null;
-                        Variable var2=null;
+                        Variable var1 = null;
+                        Variable var2 = null;
 
-                        for(Variable v:variables){
-                            if(v.name.equals(forVar)) {
+                        for (Variable v : variables) {
+                            if (v.name.equals(forVar)) {
                                 var1 = v;
                                 break;
                             }
                         }
-                        for (Variable v2:variables){
-                            if (v2.name.equals(givenList.item(j).getTextContent())){
-                                var2=v2;
+                        for (Variable v2 : variables) {
+                            if (v2.name.equals(givenList.item(j).getTextContent())) {
+                                var2 = v2;
                                 break;
-                             }
+                            }
                         }
-                        definition.addGiven(givenList.item(j).getTextContent(),var1,var2);
+                        definition.addGiven(givenList.item(j).getTextContent(), var1, var2);
                     }
 
                     String table = definitionElement.getElementsByTagName("TABLE").item(0).getTextContent();
@@ -79,16 +89,18 @@ public class XMLReaderExample {
             }
 
             // Print out variables and definitions for verification
-            for (Variable variable : variables) {
-                System.out.println(variable);
-            }
+//            for (Variable variable : variables) {
+//                System.out.println(variable);
+//            }
 
-            for (Definition definition : definitions) {
-                System.out.println(definition);
-            }
+//            for (Definition definition : definitions) {
+//                System.out.println(definition);
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return variables;
     }
 }
