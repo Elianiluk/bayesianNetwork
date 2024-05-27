@@ -3,12 +3,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class bayesBall {
-    public boolean bayesBall(ArrayList<Variable> v1,Variable start,Variable end, ArrayList<Variable> evidence) throws IOException {
-//        BufferedReader file = new BufferedReader(new FileReader(name));
-//        String xmlName=file.readLine();
-//        ArrayList<String> leftList = new ArrayList<>();
-//        ArrayList<String> rightList = new ArrayList<>();
-
+    public boolean bayesBall(ArrayList<Variable> v1,Variable start,Variable end, ArrayList<Variable> evidence) {
         ArrayList<Variable> visited=new ArrayList<>();
         if(areIndependent(start,end,visited,false,evidence))
             return true;
@@ -48,4 +43,4 @@ public class bayesBall {
         return true;
 
     }
-    }
+}

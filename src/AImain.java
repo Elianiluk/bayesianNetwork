@@ -5,15 +5,71 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class XMLReaderExample {
-    public static void main(String[] args) {
+public class AImain {
+    public static void main(String[] args) throws IOException {
         ArrayList<Variable> variables=readFromXml();
         for(int i=0;i<variables.size();i++)
             System.out.println(variables.get(i));
 
+        BufferedReader file = new BufferedReader(new FileReader("input1"));
+        String xmlName=file.readLine();
+        Variable start=null;
+        Variable end=null;
+        ArrayList<Variable> evidence = new ArrayList<>();
+        String firstLine=file.readLine();
+        String line;
+        while ((line = file.readLine()) != null){
+            if(isBayesBall()){
+                extract_for_bayesBall(start,end,evidence,variables,line);
+            }
+            else{
 
+            }
+        }
     }
 
+    public static boolean isBayesBall()
+    {
+        return true;
+    }
+
+    public static void extract_for_bayesBall(Variable start, Variable end,ArrayList<Variable> evidence,ArrayList<Variable> variables, String line){
+        boolean stillBehindFirst=true;
+        boolean stillBehindSecond=true;
+        for(int i=0;i<line.length();i++){
+            if(line.charAt(i)==' ')
+                continue;
+            if(line.charAt(i)!='-'){
+               stillBehindFirst=false;
+               continue;
+            }
+            if(line.charAt(i)=='|'){
+                stillBehindSecond=false;
+                continue;
+            }
+            if(stillBehindFirst){
+                char first=line.charAt(i);
+                for(int j=0;j<variables.size();j++){
+                    if(first==variables.get(i).name.charAt(0)){
+                        start=variables.get(i);
+                        break;
+                    }
+                }
+                continue;
+            }
+            if(!stillBehindFirst && stillBehindSecond){
+                char second=line.charAt(i);
+                for(int j=0;j<variables.size();j++){
+                    if(second==variables.get(i).name.charAt(0)){
+                        end=variables.get(i);
+                        break;
+                    }
+                }
+                continue;
+            }
+
+        }
+    }
     public static ArrayList<Variable> readFromXml() {
         ArrayList<Variable> variables = null;
         try {
