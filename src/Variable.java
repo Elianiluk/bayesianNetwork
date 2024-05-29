@@ -17,6 +17,14 @@ class Variable {
 //        this.table="";
     }
 
+    Variable(Variable other){
+        this.name= other.name;
+        this.table=other.table;
+        this.parents=other.parents;
+        this.childs=other.childs;
+        this.outcomes=other.outcomes;
+    }
+
     void addOutcome(String outcome) {
         outcomes.add(outcome);
     }
