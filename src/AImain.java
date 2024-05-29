@@ -6,16 +6,18 @@ import java.util.List;
 
 public class AImain {
     public static void main(String[] args) throws IOException {
-        ArrayList<Variable> variables=readFromXml();
+        BufferedReader file = new BufferedReader(new FileReader("/home/elian/IdeaProjects/AIProject/src/input1.txt"));
+        String xmlName=file.readLine();
+        ArrayList<Variable> variables=readFromXml(xmlName);
+
+        FileWriter myWriter = new FileWriter("/home/elian/IdeaProjects/AIProject/src/output1.txt");
+
         for(int i=0;i<variables.size();i++)
             System.out.println(variables.get(i));
-
-        BufferedReader file = new BufferedReader(new FileReader("C:\\Users\\elian\\IdeaProjects\\AIProject\\src\\input1.txt"));
-        String xmlName=file.readLine();
         String line;
-        int i=0;
-        while ((line = file.readLine()) != null && i<2){
-            if(isBayesBall()){
+        while ((line = file.readLine()) != null){
+            if(isBayesBall(line)){
+                System.out.println("bayes ball:");
                 ArrayList<Variable> evidence = new ArrayList<>();
                 ArrayList<Variable> isIn = new ArrayList<>();
                 extract_for_bayesBall(isIn,evidence,variables,line);
@@ -23,74 +25,98 @@ public class AImain {
                 System.out.println("End: " + isIn.get(0));
                 System.out.println("Evidence: " + evidence);
                 bayesBall bayesBallInstance = new bayesBall();
-                if(bayesBallInstance.bayesBall(variables,isIn.get(1),isIn.get(0),evidence))
-                    System.out.println("independent");
-                else
-                    System.out.println("not independent");
+                if(bayesBallInstance.bayesBall(variables,isIn.get(1),isIn.get(0),evidence)) {
+                    System.out.println(isIn.get(1).name + " and " + isIn.get(0).name + " are independent");
+                    myWriter.write("yes\n");
+                }
+                else {
+                    System.out.println(isIn.get(1).name + " and " + isIn.get(0).name + " are dependent");
+                    myWriter.write("no\n");
+                }
             }
             else{
-
+                System.out.println("Variable Elimination:");
+                ArrayList<Variable> evidence = new ArrayList<>();
+                ArrayList<Variable> isIn = new ArrayList<>();
+                ArrayList<Variable> order = new ArrayList<>();
+                extract_for_elimination(isIn,evidence,order,variables,line);
+                System.out.println("Start: " + isIn.get(0).name);
+                System.out.println("evidence: " + evidence);
+                System.out.println("order: " + order);
+                variableElimination variableEliminationInstance = new variableElimination();
+                variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence);
             }
-            i++;
+        }
+        String line2;
+        myWriter.close();
+        BufferedReader file2 = new BufferedReader(new FileReader("/home/elian/IdeaProjects/AIProject/src/output1.txt"));
+        while ((line2 = file2.readLine()) != null){
+            System.out.println(line2);
         }
     }
 
-    public static boolean isBayesBall()
-    {
-        return true;
+    private static void extract_for_elimination(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> order, ArrayList<Variable> variables, String line) {
+        String[] parts = line.split(" ");
+        String probabilityPart = parts[0];
+        String orderPart = parts[1];
+
+        // Extract the variables inside the P()
+        int startIndex = probabilityPart.indexOf('(') + 1;
+        int endIndex = probabilityPart.indexOf(')');
+        String insideP = probabilityPart.substring(startIndex, endIndex);
+
+        // Split the insideP part around the "|"
+        String[] conditionalParts = insideP.split("\\|");
+        String leftOfPipe = conditionalParts[0];
+        String rightOfPipe = conditionalParts[1];
+
+        // Add variables to isIn
+        String[] leftVariables = leftOfPipe.split(",");
+        for (String var : leftVariables) {
+            String[] nameValue = var.split("=");
+//            isIn.add(new Variable(nameValue[0], nameValue[1]));
+            for(Variable variable : variables){
+                if(variable.name.equals(nameValue[0])){
+                    isIn.add(variable);
+                    break;
+                }
+            }
+        }
+
+
+        // Add variables to evidence
+        String[] rightVariables = rightOfPipe.split(",");
+        for (String var : rightVariables) {
+            String[] nameValue = var.split("=");
+//            evidence.add(new Variable(nameValue[0], nameValue[1]));
+            for(Variable variable : variables){
+                if(variable.name.equals(nameValue[0])){
+                    evidence.add(variable);
+                    break;
+                }
+            }
+        }
+
+        // Add variables to order
+        String[] orderVariables = orderPart.split("-");
+        for (String var : orderVariables) {
+//            order.add(new Variable(var, null));  // Assuming variables in order have no values
+            for(Variable variable : variables){
+                if(variable.name.equals(var)){
+                    order.add(variable);
+                    break;
+                }
+            }
+        }
     }
 
-//    public static void extract_for_bayesBall(Variable start, Variable end,ArrayList<Variable> evidence,ArrayList<Variable> variables, String line){
-//        boolean stillBehindFirst=true;
-//        boolean stillBehindSecond=true;
-//        for(int i=0;i<line.length();i++){
-//            System.out.println("lol");
-//            if(line.charAt(i)==' ')
-//                continue;
-//            if(line.charAt(i)!='-'){
-//               stillBehindFirst=false;
-//               continue;
-//            }
-//            if(line.charAt(i)=='|'){
-//                stillBehindSecond=false;
-//                continue;
-//            }
-//            if(stillBehindFirst){
-//                char first=line.charAt(i);
-//                for(int j=0;j<variables.size();j++){
-//                    if(first==variables.get(i).name.charAt(0)){
-//                        start=variables.get(i);
-//                        System.out.println(start);
-//                        break;
-//                    }
-//                }
-//                continue;
-//            }
-//            if(!stillBehindFirst && stillBehindSecond){
-//                char second=line.charAt(i);
-//                for(int j=0;j<variables.size();j++){
-//                    if(second==variables.get(i).name.charAt(0)){
-//                        end=variables.get(i);
-//                        System.out.println(end);
-//                        break;
-//                    }
-//                }
-//                continue;
-//            }
-//            if(!stillBehindFirst && !stillBehindSecond){
-//                if(line.charAt(i+1)=='='){
-//                    char eviden=line.charAt(i);
-//                    for(int j=0;j<variables.size();j++){
-//                        if(eviden==variables.get(i).name.charAt(0)){
-//                            evidence.add(variables.get(i));
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        System.out.println(start+" "+end+" "+" "+evidence);
-//    }
+    public static boolean isBayesBall(String line){
+        int i=0;
+        while(line.charAt(i)==' '){
+            i++;
+        }
+        return line.charAt(i) != 'P' && line.charAt(i + 1) != '(';
+    }
 
     public static void extract_for_bayesBall(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> variables, String line) {
         // Clear previous evidence
@@ -139,10 +165,10 @@ public class AImain {
             }
         }
     }
-    public static ArrayList<Variable> readFromXml() {
+    public static ArrayList<Variable> readFromXml(String line) {
         ArrayList<Variable> variables = null;
         try {
-            File inputFile = new File("C:\\Users\\elian\\IdeaProjects\\AIProject\\src\\alarm_net.xml");
+            File inputFile = new File("/home/elian/IdeaProjects/AIProject/src/"+line);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(inputFile);

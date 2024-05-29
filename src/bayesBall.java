@@ -16,17 +16,19 @@ public class bayesBall {
         if(evidence.contains(start) && comingFromChild)
             return true;
 
-        if(start.childs.size()==0 && !comingFromChild)
-            return true;
+//        if(start.childs.size()==0 && !comingFromChild)
+//            return true;
 
-        if(start.parents.size()==0 && comingFromChild)
-            return true;
+//        if(start.parents.size()==0 && comingFromChild)
+//            return true;
 
         else if(evidence.contains(start)){
-            for(int i=0;i<start.parents.size();i++)
-                if(!visited.contains(start.parents.get(i)))
-                    if(!areIndependent(start.parents.get(i),end,visited,true,evidence))
+            for(int i=0;i<start.parents.size();i++) {
+                comingFromChild=true;
+                if (!visited.contains(start.parents.get(i)) || comingFromChild)
+                    if (!areIndependent(start.parents.get(i), end, visited, true, evidence))
                         return false;
+            }
         }
 
         else if(!evidence.contains(start) && comingFromChild){
