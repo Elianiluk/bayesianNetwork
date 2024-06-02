@@ -9,12 +9,13 @@ class Variable {
     List<String> outcomes = new ArrayList<>();
     List<Variable> parents = new ArrayList<>();
     List<Variable> childs = new ArrayList<>();
-
     ArrayList<Double> table= new ArrayList<>();
+    int numberOfOutcomes;
 
     Variable(String name) {
         this.name = name;
 //        this.table="";
+        this.numberOfOutcomes = 0;
     }
 
     Variable(Variable other){
@@ -61,7 +62,7 @@ class Variable {
                 ", outcomes=" + outcomes + ",childs=["+child+"]"+",parents=["+parent+"]"+
 //                ", childs="+childs.toString()+
 //                ", parents="+parents.toString()+
-                this.table.toString()+
+                this.table.toString()+" number of outcomes=" + numberOfOutcomes +
                 '}';
     }
 }

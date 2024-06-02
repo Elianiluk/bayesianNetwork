@@ -37,11 +37,13 @@ public class AImain {
             else{
                 System.out.println("Variable Elimination:");
                 ArrayList<Variable> evidence = new ArrayList<>();
+                ArrayList<String> evidenceOutcome = new ArrayList<>();
                 ArrayList<Variable> isIn = new ArrayList<>();
                 ArrayList<Variable> order = new ArrayList<>();
-                extract_for_elimination(isIn,evidence,order,variables,line);
+                extract_for_elimination(isIn,evidence,order,variables,line,evidenceOutcome);
                 System.out.println("Start: " + isIn.get(0).name);
                 System.out.println("evidence: " + evidence);
+                System.out.println("evidenceOutcome: " + evidenceOutcome);
                 System.out.println("order: " + order);
                 variableElimination variableEliminationInstance = new variableElimination();
                 variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence);
@@ -55,7 +57,7 @@ public class AImain {
         }
     }
 
-    private static void extract_for_elimination(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> order, ArrayList<Variable> variables, String line) {
+    private static void extract_for_elimination(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> order, ArrayList<Variable> variables, String line,ArrayList<String> evidenceOutcome) {
         String[] parts = line.split(" ");
         String probabilityPart = parts[0];
         String orderPart = parts[1];
@@ -92,6 +94,7 @@ public class AImain {
             for(Variable variable : variables){
                 if(variable.name.equals(nameValue[0])){
                     evidence.add(variable);
+                    evidenceOutcome.add(nameValue[1]);
                     break;
                 }
             }
@@ -163,6 +166,17 @@ public class AImain {
                     }
                 }
             }
+            else{
+                for(int i=0;i<rightPart.length()-1;i++){
+                    if(rightPart.charAt(i+1)=='='){
+                        for (Variable variable : variables) {
+                            if (variable.name.charAt(0) == rightPart.charAt(i)) {
+                                evidence.add(variable);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     public static ArrayList<Variable> readFromXml(String line) {
@@ -188,7 +202,7 @@ public class AImain {
                     for (int j = 0; j < outcomeList.getLength(); j++) {
                         variable.addOutcome(outcomeList.item(j).getTextContent());
                     }
-
+                    variable.numberOfOutcomes=outcomeList.getLength();
                     variables.add(variable);
                 }
             }
