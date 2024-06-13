@@ -1,19 +1,18 @@
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class AImain {
     public static void main(String[] args) throws IOException {
-        BufferedReader file = new BufferedReader(new FileReader("/home/elian/IdeaProjects/AIProject/src/input1.txt"));
+        BufferedReader file = new BufferedReader(new FileReader("/home/elian/IdeaProjects/AIProject/src/input.txt"));
         String xmlName=file.readLine();
         ArrayList<Variable> variables=readFromXml(xmlName);
 
-        FileWriter myWriter = new FileWriter("/home/elian/IdeaProjects/AIProject/src/output1.txt");
+        FileWriter myWriter = new FileWriter("/home/elian/IdeaProjects/AIProject/src/output.txt");
 
-        for(int i=0;i<variables.size();i++)
-            System.out.println(variables.get(i));
+//        for(int i=0;i<variables.size();i++)
+//            System.out.println(variables.get(i));
         String line;
         while ((line = file.readLine()) != null){
             if(isBayesBall(line)){
@@ -41,17 +40,18 @@ public class AImain {
                 ArrayList<Variable> isIn = new ArrayList<>();
                 ArrayList<Variable> order = new ArrayList<>();
                 extract_for_elimination(isIn,evidence,order,variables,line,evidenceOutcome);
-                System.out.println("Start: " + isIn.get(0).name);
-                System.out.println("evidence: " + evidence);
-                System.out.println("evidenceOutcome: " + evidenceOutcome);
-                System.out.println("order: " + order);
+//                Collections.reverse(order);
+//                System.out.println("Start: " + isIn.get(0).name);
+//                System.out.println("evidence: " + evidence);
+//                System.out.println("evidenceOutcome: " + evidenceOutcome);
+//                System.out.println("order: " + order);
                 variableElimination variableEliminationInstance = new variableElimination();
-                variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence);
+                variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence,evidenceOutcome,myWriter);
             }
         }
         String line2;
         myWriter.close();
-        BufferedReader file2 = new BufferedReader(new FileReader("/home/elian/IdeaProjects/AIProject/src/output1.txt"));
+        BufferedReader file2 = new BufferedReader(new FileReader("/home/elian/IdeaProjects/AIProject/src/output.txt"));
         while ((line2 = file2.readLine()) != null){
             System.out.println(line2);
         }
@@ -180,17 +180,15 @@ public class AImain {
         }
     }
     public static ArrayList<Variable> readFromXml(String line) {
-        ArrayList<Variable> variables = null;
+        ArrayList<Variable> variables = new ArrayList<>();
         try {
-            File inputFile = new File("/home/elian/IdeaProjects/AIProject/src/"+line);
+            File inputFile = new File("/home/elian/IdeaProjects/AIProject/src/" + line);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(inputFile);
             doc.getDocumentElement().normalize();
 
             NodeList variableList = doc.getElementsByTagName("VARIABLE");
-            variables = new ArrayList<>();
-
             for (int i = 0; i < variableList.getLength(); i++) {
                 Node variableNode = variableList.item(i);
                 if (variableNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -202,7 +200,7 @@ public class AImain {
                     for (int j = 0; j < outcomeList.getLength(); j++) {
                         variable.addOutcome(outcomeList.item(j).getTextContent());
                     }
-                    variable.numberOfOutcomes=outcomeList.getLength();
+                    variable.numberOfOutcomes = outcomeList.getLength();
                     variables.add(variable);
                 }
             }
@@ -215,8 +213,6 @@ public class AImain {
                 if (definitionNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element definitionElement = (Element) definitionNode;
                     String forVar = definitionElement.getElementsByTagName("FOR").item(0).getTextContent();
-//                    for(int i=0;i<variableList.getLength();i++)
-
                     Definition definition = new Definition(forVar);
 
                     NodeList givenList = definitionElement.getElementsByTagName("GIVEN");
@@ -242,24 +238,43 @@ public class AImain {
                     String table = definitionElement.getElementsByTagName("TABLE").item(0).getTextContent();
                     definition.setTable(table);
 
-                    for (Variable v : variables) {
-                        if (v.name.equals(forVar)) {
-                            v.setTable(table); // Set the probability table for the variable
-                            break;
-                        }
-                    }
-
                     definitions.add(definition);
                 }
             }
 
-            // Print out variables and definitions for verification
-//            for (Variable variable : variables) {
-//                System.out.println(variable);
-//            }
+            Map<Variable, String[][]> tablesMap = new HashMap<>();
 
-//            for (Definition definition : definitions) {
-//                System.out.println(definition);
+            // Process each definition and store the CPT in the map
+            for (Definition def : definitions) {
+                Variable var = null;
+                for (Variable v : variables) {
+                    if (v.name.equals(def.forVar)) {
+                        var = v;
+                        break;
+                    }
+                }
+                String[][] cptTable = createTable(def, var);
+                assert var != null;
+                var.setTable(cptTable);
+                if (cptTable == null) {
+                    System.err.println("Error: CPT table for variable " + def.forVar + " is null.");
+                } else {
+                    tablesMap.put(var, cptTable);
+                }
+            }
+
+            // Example: print out the CPT table for each variable (for debugging purposes)
+//            for (Variable variable : variables) {
+//                String[][] cptTable = tablesMap.get(variable);
+//                if (cptTable != null) {
+//                    variable.setTable(cptTable);
+//                    System.out.println("Table of posibilities for Variable: " + variable.name);
+//                    printTable(variable.table);
+////                    System.out.println(variable.table);
+//                    System.out.println();
+//                } else {
+//                    System.err.println("No CPT table found for variable: " + variable.name);
+//                }
 //            }
 
         } catch (Exception e) {
@@ -267,5 +282,74 @@ public class AImain {
         }
 
         return variables;
+    }
+
+    private static String[][] createTable(Definition definition, Variable var) {
+        if (var == null) {
+            System.err.println("Error: Variable is null.");
+            return null;
+        }
+
+        if(definition==null){
+            System.err.println("Error: Definition is null.");
+            return null;
+        }
+
+        if (definition.probabilities == null || definition.givens == null) {
+            System.err.println("Error: Definition probabilities or givens are null.");
+            return null;
+        }
+
+        int numOutcomes = var.outcomes.size();
+        int numGivenCombinations = definition.probabilities.size() / numOutcomes;
+
+        // Create the table with appropriate size, including header row
+        String[][] table = new String[numGivenCombinations * numOutcomes + 1][definition.givens.size() + 2];
+
+        // Fill in the header row
+        for (int j = 0; j < definition.givens.size(); j++) {
+            table[0][j] = definition.givens.get(j);
+        }
+
+        table[0][definition.givens.size()] = definition.forVar;
+        table[0][definition.givens.size() + 1] = "pro";
+
+        // Fill the table rows with the given combinations, outcomes, and probabilities
+        int counter = var.outcomes.size();
+
+        // Set the variable values on the last column
+        for (int i = 1; i < numGivenCombinations * numOutcomes + 1; i++) {
+            table[i][definition.givens.size()] = var.outcomes.get((i - 1) % counter);
+        }
+
+        // Set the parents values
+        for (int j = definition.givens.size() - 1; j >= 0; j--) {
+            for (int i = 1; i < numGivenCombinations * numOutcomes + 1; i++) {
+                table[i][j] = var.parents.get(j).outcomes.get(((i - 1) / counter) % var.parents.get(j).outcomes.size());
+            }
+            counter *= var.parents.get(j).outcomes.size();
+        }
+
+        // Set the probability
+        for (int i = 1; i < numGivenCombinations * numOutcomes + 1; i++) {
+            double prob = definition.probabilities.get(i - 1);
+            table[i][definition.givens.size() + 1] = String.format("%.5f", prob);
+        }
+
+        return table;
+    }
+
+    private static void printTable(String[][] table) {
+        if (table == null) {
+            System.err.println("Error: Cannot print a null table.");
+            return;
+        }
+        // Print the header
+        for (String[] row : table) {
+            for (String cell : row) {
+                System.out.print(cell + "\t");
+            }
+            System.out.println();
+        }
     }
 }

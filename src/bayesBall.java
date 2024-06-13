@@ -24,8 +24,8 @@ public class bayesBall {
 
         else if(evidence.contains(start)){
             for(int i=0;i<start.parents.size();i++) {
-                comingFromChild=true;
-                if (!visited.contains(start.parents.get(i)) || comingFromChild)
+//                comingFromChild=true;
+//                if (!visited.contains(start.parents.get(i)))
                     if (!areIndependent(start.parents.get(i), end, visited, true, evidence))
                         return false;
             }
