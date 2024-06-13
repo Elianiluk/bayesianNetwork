@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class variableElimination {
 
@@ -58,8 +60,6 @@ public class variableElimination {
             sortFactors(newFactors);
             factors.removeAll(newFactors);
 
-
-
             Factor newFactor = newFactors.get(0);
             newFactors.remove(0);
             for (Factor factor : newFactors) {
@@ -87,10 +87,12 @@ public class variableElimination {
     }
 
     private static void sortFactors(ArrayList<Factor> factors) {
-        ArrayList<Factor> newFactors = new ArrayList<>();
-        for (Factor factor : factors) {
-
-        }
+        Collections.sort(factors, new Comparator<Factor>() {
+            @Override
+            public int compare(Factor f1, Factor f2) {
+                return Integer.compare(f1.getVariables().size(), f2.getVariables().size());
+            }
+        });
     }
 }
 
