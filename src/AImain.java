@@ -24,7 +24,7 @@ public class AImain {
                 System.out.println("End: " + isIn.get(0));
                 System.out.println("Evidence: " + evidence);
                 bayesBall bayesBallInstance = new bayesBall();
-                if(bayesBallInstance.bayesBall(variables,isIn.get(1),isIn.get(0),evidence)) {
+                if(bayesBallInstance.bayesBall(isIn.get(1),isIn.get(0),evidence)) {
                     System.out.println(isIn.get(1).name + " and " + isIn.get(0).name + " are independent");
                     myWriter.write("yes\n");
                 }
@@ -39,14 +39,16 @@ public class AImain {
                 ArrayList<String> evidenceOutcome = new ArrayList<>();
                 ArrayList<Variable> isIn = new ArrayList<>();
                 ArrayList<Variable> order = new ArrayList<>();
-                extract_for_elimination(isIn,evidence,order,variables,line,evidenceOutcome);
+                ArrayList<String> queryOutcome = new ArrayList<>();
+                extract_for_elimination(isIn,evidence,order,variables,line,evidenceOutcome,queryOutcome);
 //                Collections.reverse(order);
 //                System.out.println("Start: " + isIn.get(0).name);
 //                System.out.println("evidence: " + evidence);
 //                System.out.println("evidenceOutcome: " + evidenceOutcome);
-//                System.out.println("order: " + order);
+                System.out.println("order: " + order.get(0).name);
+                System.out.println("query outcome "+ queryOutcome.get(0));
                 variableElimination variableEliminationInstance = new variableElimination();
-                variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence,evidenceOutcome,myWriter);
+                variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence,evidenceOutcome,myWriter,queryOutcome);
             }
         }
         String line2;
@@ -57,7 +59,7 @@ public class AImain {
         }
     }
 
-    private static void extract_for_elimination(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> order, ArrayList<Variable> variables, String line,ArrayList<String> evidenceOutcome) {
+    private static void extract_for_elimination(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> order, ArrayList<Variable> variables, String line,ArrayList<String> evidenceOutcome,ArrayList<String> queryOutcome) {
         String[] parts = line.split(" ");
         String probabilityPart = parts[0];
         String orderPart = parts[1];
@@ -83,6 +85,7 @@ public class AImain {
                     break;
                 }
             }
+            queryOutcome.add(nameValue[1]);
         }
 
 

@@ -6,16 +6,22 @@ import java.util.Comparator;
 
 public class variableElimination {
 
-    public void variableElimination(Variable start, ArrayList<Variable> variables, ArrayList<Variable> order, ArrayList<Variable> evidence, ArrayList<String> outcome, FileWriter myWriter) throws IOException {
+    public void variableElimination(Variable start, ArrayList<Variable> variables, ArrayList<Variable> order, ArrayList<Variable> evidence, ArrayList<String> outcome, FileWriter myWriter,ArrayList<String> queryOutcome) throws IOException {
         int numAdds = 0, numMultiply = 0;
         double probability = 0;
         ArrayList<Factor> factors = new ArrayList<>();
-        ArrayList<Variable> toAdd = new ArrayList<>();
+        ArrayList<Variable> toAdd = new ArrayList<>(variables);
         toAddStart(toAdd, start);
+        bayesBall ball = new bayesBall();
 
-        for (Variable v : evidence) {
-            toAddStart(toAdd, v);
-        }
+//        for (Variable v : evidence) {
+//            toAddStart(toAdd, v);
+//        }
+//        for (Variable v : order) {
+//            toAddStart(toAdd, v);
+//        }
+
+        removeIndependentVariables(toAdd,start,ball,evidence);
 
         for (Variable v : toAdd) {
             System.out.println("name: " + v.name);
@@ -46,6 +52,9 @@ public class variableElimination {
             factor.printFactor();
         }
 
+//        for (Variable v : order) {
+//            factors.add(new Factor(v));
+//        }
 
         for (Variable ord : order) {
             if (!toAdd.contains(ord)) {
@@ -61,17 +70,25 @@ public class variableElimination {
             factors.removeAll(newFactors);
 
             Factor newFactor = newFactors.get(0);
-            newFactors.remove(0);
+            newFactors.remove(newFactor);
             for (Factor factor : newFactors) {
                 numMultiply += newFactor.multiply(factor);
             }
-            numAdds += newFactor.marginalize(ord);
+            numAdds += newFactor.sumUp(ord);
             factors.add(newFactor);
         }
 
-        Factor newFactor = factors.get(0);
-        newFactor.normalize();
-        probability = Double.parseDouble(newFactor.getTable()[1][newFactor.getTable()[0].length - 1]);
+        Factor newFactor=factors.get(0);
+        factors.remove(newFactor);
+        for(Factor fr: factors)
+            numMultiply += newFactor.multiply(fr);
+//        Factor newFactor = factors.get(0);
+//        numAdds+= newFactor.marginalize();
+        numAdds+=newFactor.normalize();
+        newFactor.printFactor();
+
+        int index=start.outcomes.indexOf(queryOutcome.get(0));
+        probability = Double.parseDouble(newFactor.getTable()[index+1][newFactor.getTable()[0].length - 1]);
         myWriter.write(probability + "," + numAdds + "," + numMultiply + "\n");
         System.out.println("finish");
     }
@@ -86,6 +103,10 @@ public class variableElimination {
         }
     }
 
+    private static void removeIndependentVariables(ArrayList<Variable> toRemove, Variable start, bayesBall ball,ArrayList<Variable> evidence) {
+        toRemove.removeIf(v -> ball.bayesBall(v, start, evidence));
+    }
+
     private static void sortFactors(ArrayList<Factor> factors) {
         Collections.sort(factors, new Comparator<Factor>() {
             @Override
@@ -96,19 +117,3 @@ public class variableElimination {
     }
 }
 
-class Result {
-    double probability;
-    int addOperations;
-    int multiplyOperations;
-
-    public Result(double probability, int addOperations, int multiplyOperations) {
-        this.probability = probability;
-        this.addOperations = addOperations;
-        this.multiplyOperations = multiplyOperations;
-    }
-
-    @Override
-    public String toString() {
-        return "Probability: " + probability + ", Additions: " + addOperations + ", Multiplications: " + multiplyOperations;
-    }
-}
