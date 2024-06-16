@@ -27,8 +27,14 @@ public class variableElimination {
             System.out.println("name: " + v.name);
         }
 
+
+
         for (Variable v : toAdd) {
             factors.add(new Factor(v));
+        }
+
+        for (Factor v : factors) {
+            Collections.reverse(v.getVariables());
         }
 
         System.out.println("before delete");
@@ -47,6 +53,12 @@ public class variableElimination {
             }
         }
 
+        for (Factor factor : factors) {
+            if(factor.getVariables().size()==1 && evidence.contains(factor.getVariables().get(0))){
+                factors.remove(factor);
+            }
+        }
+
         System.out.println("after delete");
         for (Factor factor : factors) {
             factor.printFactor();
@@ -56,6 +68,7 @@ public class variableElimination {
 //            factors.add(new Factor(v));
 //        }
 
+        int index=1;
         for (Variable ord : order) {
             if (!toAdd.contains(ord)) {
                 continue;
@@ -70,26 +83,49 @@ public class variableElimination {
             factors.removeAll(newFactors);
 
             Factor newFactor = newFactors.get(0);
+            System.out.println(index+":");
+//            index++;
+            newFactor.printFactor();
             newFactors.remove(newFactor);
             for (Factor factor : newFactors) {
+                System.out.println("I multipy:");
+                newFactor.printFactor();
+                System.out.println("with:");
+                factor.printFactor();
                 numMultiply += newFactor.multiply(factor);
+                index++;
+                System.out.println(index+":");
+                System.out.println("and i get this:");
+                newFactor.printFactor();
+//                newFactors.remove(factor);
             }
             numAdds += newFactor.sumUp(ord);
             factors.add(newFactor);
+            newFactors.clear();
         }
 
         Factor newFactor=factors.get(0);
+        index++;
+        System.out.println(index+":");
+        newFactor.printFactor();
         factors.remove(newFactor);
-        for(Factor fr: factors)
-            numMultiply += newFactor.multiply(fr);
+        if(!factors.isEmpty()){
+            for(Factor fr: factors) {
+                numMultiply += newFactor.multiply(fr);
+                index++;
+                System.out.println(index+":");
+                fr.printFactor();
+            }
+        }
 //        Factor newFactor = factors.get(0);
 //        numAdds+= newFactor.marginalize();
         numAdds+=newFactor.normalize();
         newFactor.printFactor();
 
-        int index=start.outcomes.indexOf(queryOutcome.get(0));
-        probability = Double.parseDouble(newFactor.getTable()[index+1][newFactor.getTable()[0].length - 1]);
-        myWriter.write(probability + "," + numAdds + "," + numMultiply + "\n");
+        int index1=start.outcomes.indexOf(queryOutcome.get(0));
+        probability = Double.parseDouble(newFactor.getTable()[index1+1][newFactor.getTable()[0].length - 1]);
+        String roundedNumber = String.format("%.5f", probability);
+        myWriter.write(roundedNumber + "," + numAdds + "," + numMultiply + "\n");
         System.out.println("finish");
     }
 
@@ -111,7 +147,7 @@ public class variableElimination {
         Collections.sort(factors, new Comparator<Factor>() {
             @Override
             public int compare(Factor f1, Factor f2) {
-                return Integer.compare(f1.getVariables().size(), f2.getVariables().size());
+                return Integer.compare(f1.getTableSize(), f2.getTableSize());
             }
         });
     }
