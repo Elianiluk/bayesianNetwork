@@ -144,7 +144,7 @@ public class variableElimination {
     }
 
     private static void sortFactors(ArrayList<Factor> factors) {
-        Collections.sort(factors, new Comparator<Factor>() {
+        factors.sort(new Comparator<Factor>() {
             @Override
             public int compare(Factor f1, Factor f2) {
                 return Integer.compare(f1.getTableSize(), f2.getTableSize());

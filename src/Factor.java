@@ -36,16 +36,74 @@ public class Factor {
     public int multiply(Factor other) {
         int numMultiplies = 0;
 
+//        System.out.println("other:");
+//        for(Variable var: other.variables)
+//            System.out.println(var.name);
+//        System.out.println("this:");
+//        for(Variable var: this.variables)
+//            System.out.println(var.name);
+
+
+        List<Variable> newVariables = new ArrayList<>();
         // Combine variables from both factors
-        List<Variable> newVariables = new ArrayList<>(this.variables);
-        for (Variable var : other.variables) {
-            if (!newVariables.contains(var)) {
-                newVariables.add(var);
+        if(other.getVariables().size()>this.getVariables().size()){
+//            newVariables = new ArrayList<>(other.variables);
+            for(int i=0;i<other.table[0].length-1;i++) {
+                String str = other.table[0][i];
+                for (Variable var : other.variables) {
+                    if (str.equals(var.name)) {
+                        newVariables.add(var);
+                        break;
+                    }
+                }
+            }
+            for (Variable var : this.variables) {
+                if (!newVariables.contains(var)) {
+                    newVariables.add(var);
+                    break;
+                }
+            }
+        }
+        else{
+            for(int i=0;i<this.table[0].length-1;i++){
+                String str=this.table[0][i];
+                for(Variable var: this.variables){
+                    if(str.equals(var.name))
+                        newVariables.add(var);
+                }
+            }
+            for (Variable var : other.variables) {
+                if (!newVariables.contains(var)) {
+                    newVariables.add(var);
+                }
             }
         }
 
-//        if(!this.hadEvidence)
-//            Collections.reverse(other.variables);
+        ArrayList<Variable> lolOther=new ArrayList<>();
+        for(int i=0;i<other.table[0].length-1;i++){
+            String str=other.table[0][i];
+            for(Variable var: other.variables){
+                if(str.equals(var.name))
+                    lolOther.add(var);
+            }
+        }
+
+        ArrayList<Variable> lolThis=new ArrayList<>();
+        for(int i=0;i<this.table[0].length-1;i++){
+            String str=this.table[0][i];
+            for(Variable var: this.variables){
+                if(str.equals(var.name))
+                    lolThis.add(var);
+            }
+        }
+
+//        System.out.println("other:");
+//        for(Variable var:other.variables)
+//            System.out.println(var.name);
+//
+//        System.out.println("lol:");
+//        for(Variable var:lolOther)
+//            System.out.println(var.name);
 
         // Calculate the size of the new table based on combined variables
         int newTableSize = 1;
@@ -85,10 +143,19 @@ public class Factor {
                 // Check if the current rows can be multiplied (consistent assignments for common variables)
                 boolean consistent = true;
                 for (Variable var : commonVariables) {
-                    int thisIndex = this.variables.indexOf(var);
-                    int otherIndex = other.variables.indexOf(var);
-                    System.out.println("index of A");
-                    System.out.println(thisIndex+" "+otherIndex);
+                    int thisIndex = lolThis.indexOf(var);
+//                    int thisIndex=0;
+//                    for(int s=0;s<this.table[0].length;s++)
+//                        if(this.table[0][s].equals(var.name))
+//                            thisIndex=s;
+                    int otherIndex = lolOther.indexOf(var);
+//                    int otherIndex=0;
+//                    for(int s=0;s<other.table[0].length;s++)
+//                        if(other.table[0][s].equals(var.name))
+//                            otherIndex=s;
+//                    for(Variable var1:variables)
+//                        System.out.println("index of "+var1.name);
+//                    System.out.println(thisIndex+" "+otherIndex);
                     if (!thisLine[thisIndex].equals(otherLine[otherIndex])) {
                         consistent = false;
                         break;
@@ -103,9 +170,9 @@ public class Factor {
                     for (int k = 0; k < newVariables.size(); k++) {
                         Variable newVar = newVariables.get(k);
                         if (this.variables.contains(newVar)) {
-                            newRow[k] = thisLine[this.variables.indexOf(newVar)];
+                            newRow[k] = thisLine[lolThis.indexOf(newVar)];
                         } else if (other.variables.contains(newVar)) {
-                            newRow[k] = otherLine[other.variables.indexOf(newVar)];
+                            newRow[k] = otherLine[lolOther.indexOf(newVar)];
                         }
                     }
 
@@ -215,12 +282,15 @@ public class Factor {
         return this.table.length - 1;
     }
 
-
-
     public int normalize() {
         double sum = 0;
         int numOfAdds = 0;
+        int index=0;
         for (String[] row : table) {
+            if(index==0){
+                index++;
+                continue;
+            }
             try {
                 sum += Double.parseDouble(row[this.table[0].length - 1]);
                 numOfAdds++;
@@ -248,7 +318,7 @@ public class Factor {
         this.hadEvidence=true;
         ArrayList<Variable> newVariables = new ArrayList<>(this.variables);
         newVariables.remove(evi);
-        Collections.reverse(newVariables);
+//        Collections.reverse(newVariables);
         String [][] newTable = new String[(this.table.length/ evi.numberOfOutcomes)+1][this.table[0].length-1];
         for (int j = 0; j < newVariables.size(); j++) {
             newTable[0][j] = newVariables.get(j).name;

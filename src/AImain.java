@@ -337,6 +337,7 @@ public class AImain {
         for (int i = 1; i < numGivenCombinations * numOutcomes + 1; i++) {
             double prob = definition.probabilities.get(i - 1);
             table[i][definition.givens.size() + 1] = String.format("%.5f", prob);
+//            table[i][definition.givens.size() + 1]=String.format(String.valueOf(prob));
         }
 
         return table;
