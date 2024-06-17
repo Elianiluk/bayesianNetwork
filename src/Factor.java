@@ -34,15 +34,11 @@ public class Factor {
     }
 
     public int multiply(Factor other) {
+        if(other.getVariables().size()>this.getVariables().size()){
+            return this.multiply2(other);
+        }
+
         int numMultiplies = 0;
-
-//        System.out.println("other:");
-//        for(Variable var: other.variables)
-//            System.out.println(var.name);
-//        System.out.println("this:");
-//        for(Variable var: this.variables)
-//            System.out.println(var.name);
-
 
         List<Variable> newVariables = new ArrayList<>();
         // Combine variables from both factors
@@ -97,13 +93,136 @@ public class Factor {
             }
         }
 
-//        System.out.println("other:");
-//        for(Variable var:other.variables)
-//            System.out.println(var.name);
-//
-//        System.out.println("lol:");
-//        for(Variable var:lolOther)
-//            System.out.println(var.name);
+        // Calculate the size of the new table based on combined variables
+        int newTableSize = 1;
+        for (Variable var : newVariables) {
+            newTableSize *= var.numberOfOutcomes;
+        }
+
+        // Initialize a new table to hold multiplied values
+        String[][] newTable = new String[newTableSize + 1][newVariables.size() + 1];
+
+        // Populate the header row of the new table with variable names and "pro" for probability
+        for (int j = 0; j < newVariables.size(); j++) {
+            newTable[0][j] = newVariables.get(j).name;
+        }
+        newTable[0][newTable[0].length - 1] = "pro";
+
+        // Identify common variables between this factor and the other factor
+        List<Variable> commonVariables = new ArrayList<>();
+        for (Variable var : newVariables) {
+            if (this.variables.contains(var) && other.variables.contains(var)) {
+                commonVariables.add(var);
+            }
+        }
+
+        // Iterate through each row in this factor's table
+        for (int i = 1; i < this.table.length; i++) {
+            String[] thisLine = this.table[i];
+            double prob1 = Double.parseDouble(thisLine[thisLine.length - 1]);
+
+            // Iterate through each row in the other factor's table
+            for (int j = 1; j < other.table.length; j++) {
+                String[] otherLine = other.table[j];
+                double prob2 = Double.parseDouble(otherLine[otherLine.length - 1]);
+
+                // Check if the current rows can be multiplied (consistent assignments for common variables)
+                boolean consistent = true;
+                for (Variable var : commonVariables) {
+                    int thisIndex = lolThis.indexOf(var);
+                    int otherIndex = lolOther.indexOf(var);
+                    if (!thisLine[thisIndex].equals(otherLine[otherIndex])) {
+                        consistent = false;
+                        break;
+                    }
+                }
+
+                if (consistent) {
+                    // Create a new row in the new table for the multiplied result
+                    String[] newRow = new String[newTable[0].length];
+
+                    // Fill the new row according to the new variable order
+                    for (int k = 0; k < newVariables.size(); k++) {
+                        Variable newVar = newVariables.get(k);
+                        if (this.variables.contains(newVar)) {
+                            newRow[k] = thisLine[lolThis.indexOf(newVar)];
+                        } else if (other.variables.contains(newVar)) {
+                            newRow[k] = otherLine[lolOther.indexOf(newVar)];
+                        }
+                    }
+
+                    // Multiply the probabilities
+                    newRow[newTable[0].length - 1] = String.format(String.valueOf(prob1 * prob2));
+
+                    // Add the new row to the new table
+                    newTable[numMultiplies + 1] = newRow;
+                    numMultiplies++;
+                }
+            }
+        }
+
+        // Update this factor's variables and table with the new variables and table
+        this.variables = newVariables;
+        this.table = newTable;
+
+        return numMultiplies;
+    }
+
+    public int multiply2(Factor other) {
+        int numMultiplies = 0;
+
+        List<Variable> newVariables = new ArrayList<>();
+        // Combine variables from both factors
+        if(other.getVariables().size()>this.getVariables().size()){
+//            newVariables = new ArrayList<>(other.variables);
+            for(int i=0;i<other.table[0].length-1;i++) {
+                String str = other.table[0][i];
+                for (Variable var : other.variables) {
+                    if (str.equals(var.name)) {
+                        newVariables.add(var);
+                        break;
+                    }
+                }
+            }
+            for (Variable var : this.variables) {
+                if (!newVariables.contains(var)) {
+                    newVariables.add(var);
+                    break;
+                }
+            }
+        }
+        else{
+            for(int i=0;i<this.table[0].length-1;i++){
+                String str=this.table[0][i];
+                for(Variable var: this.variables){
+                    if(str.equals(var.name))
+                        newVariables.add(var);
+                }
+            }
+            for (Variable var : other.variables) {
+                if (!newVariables.contains(var)) {
+                    newVariables.add(var);
+                }
+            }
+        }
+
+        ArrayList<Variable> lolOther=new ArrayList<>();
+        for(int i=0;i<other.table[0].length-1;i++){
+            String str=other.table[0][i];
+            for(Variable var: other.variables){
+                if(str.equals(var.name))
+                    lolOther.add(var);
+            }
+        }
+
+        ArrayList<Variable> lolThis=new ArrayList<>();
+        for(int i=0;i<this.table[0].length-1;i++){
+            String str=this.table[0][i];
+            for(Variable var: this.variables){
+                if(str.equals(var.name))
+                    lolThis.add(var);
+            }
+        }
 
         // Calculate the size of the new table based on combined variables
         int newTableSize = 1;
@@ -128,34 +247,21 @@ public class Factor {
             }
         }
 
-//        if(this.hadEvidence)
-//            Collections.reverse(other.variables);
         // Iterate through each row in this factor's table
-        for (int i = 1; i < this.table.length; i++) {
-            String[] thisLine = this.table[i];
+        for (int i = 1; i < other.table.length; i++) {
+            String[] thisLine = other.table[i];
             double prob1 = Double.parseDouble(thisLine[thisLine.length - 1]);
 
             // Iterate through each row in the other factor's table
-            for (int j = 1; j < other.table.length; j++) {
-                String[] otherLine = other.table[j];
+            for (int j = 1; j < this.table.length; j++) {
+                String[] otherLine = this.table[j];
                 double prob2 = Double.parseDouble(otherLine[otherLine.length - 1]);
 
                 // Check if the current rows can be multiplied (consistent assignments for common variables)
                 boolean consistent = true;
                 for (Variable var : commonVariables) {
-                    int thisIndex = lolThis.indexOf(var);
-//                    int thisIndex=0;
-//                    for(int s=0;s<this.table[0].length;s++)
-//                        if(this.table[0][s].equals(var.name))
-//                            thisIndex=s;
-                    int otherIndex = lolOther.indexOf(var);
-//                    int otherIndex=0;
-//                    for(int s=0;s<other.table[0].length;s++)
-//                        if(other.table[0][s].equals(var.name))
-//                            otherIndex=s;
-//                    for(Variable var1:variables)
-//                        System.out.println("index of "+var1.name);
-//                    System.out.println(thisIndex+" "+otherIndex);
+                    int thisIndex = lolOther.indexOf(var);
+                    int otherIndex = lolThis.indexOf(var);
                     if (!thisLine[thisIndex].equals(otherLine[otherIndex])) {
                         consistent = false;
                         break;
@@ -169,15 +275,15 @@ public class Factor {
                     // Fill the new row according to the new variable order
                     for (int k = 0; k < newVariables.size(); k++) {
                         Variable newVar = newVariables.get(k);
-                        if (this.variables.contains(newVar)) {
-                            newRow[k] = thisLine[lolThis.indexOf(newVar)];
-                        } else if (other.variables.contains(newVar)) {
-                            newRow[k] = otherLine[lolOther.indexOf(newVar)];
+                        if (other.variables.contains(newVar)) {
+                            newRow[k] = thisLine[lolOther.indexOf(newVar)];
+                        } else if (this.variables.contains(newVar)) {
+                            newRow[k] = otherLine[lolThis.indexOf(newVar)];
                         }
                     }
 
                     // Multiply the probabilities
-                    newRow[newTable[0].length - 1] = String.format("%.5f", prob1 * prob2);
+                    newRow[newTable[0].length - 1] = String.format(String.valueOf(prob1 * prob2));
 
                     // Add the new row to the new table
                     newTable[numMultiplies + 1] = newRow;
@@ -191,18 +297,6 @@ public class Factor {
         this.table = newTable;
 
         return numMultiplies;
-    }
-
-    private boolean areConsistent(Factor other,String[] thisLine, String[] otherLine, List<Variable> commonVariables) {
-        // Check if the variable assignments are consistent for common variables
-        for (Variable var : commonVariables) {
-            int idx1 = this.variables.indexOf(var);
-            int idx2 = other.variables.indexOf(var);
-            if (!thisLine[idx1].equals(otherLine[idx2])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public int sumUp(Variable var) {
@@ -270,7 +364,7 @@ public class Factor {
             for (int j = 0; j < newVariables.size(); j++) {
                 newRow[j] = assignmentValues[j];
             }
-            newRow[newTable[0].length - 1] = String.format("%.5f", summedProbability);
+            newRow[newTable[0].length - 1] = String.format(String.valueOf(summedProbability));
             newTable[newIndex++] = newRow;
         }
 
@@ -300,7 +394,7 @@ public class Factor {
         }
         for (int i = 1; i < table.length; i++) {
             try {
-                table[i][this.table[0].length - 1] = String.format("%.5f", Double.parseDouble(table[i][this.table[0].length - 1]) / sum);
+                table[i][this.table[0].length - 1] = String.format(String.valueOf(Double.parseDouble(table[i][this.table[0].length - 1]) / sum));
             } catch (NumberFormatException e) {
                 // Skip invalid values
             }
