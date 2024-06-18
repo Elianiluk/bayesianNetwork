@@ -1,0 +1,6 @@
+alarm_net.xml
+P(A=true|D=true) B-C
+P(B=true|A=true) C-D
+P(B=false|A=true) D-C
+P(C=false|A=false) B-D
+P(A=true|) B-C-D

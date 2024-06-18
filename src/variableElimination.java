@@ -14,24 +14,19 @@ public class variableElimination {
         toAddStart(toAdd, start);
         bayesBall ball = new bayesBall();
 
-//        for (Variable v : evidence) {
-//            toAddStart(toAdd, v);
-//        }
-//        for (Variable v : order) {
-//            toAddStart(toAdd, v);
-//        }
-
         removeIndependentVariables(toAdd,start,ball,evidence);
 
         for (Variable v : toAdd) {
             System.out.println("name: " + v.name);
         }
 
-
-
         for (Variable v : toAdd) {
             factors.add(new Factor(v));
         }
+
+        boolean check=checkForBuiltIn(factors,evidence,start,outcome,queryOutcome,myWriter);
+        if (check)
+            return;
 
         for (Factor v : factors) {
             Collections.reverse(v.getVariables());
@@ -64,10 +59,6 @@ public class variableElimination {
             factor.printFactor();
         }
 
-//        for (Variable v : order) {
-//            factors.add(new Factor(v));
-//        }
-
         int index=1;
         for (Variable ord : order) {
             if (!toAdd.contains(ord)) {
@@ -94,10 +85,8 @@ public class variableElimination {
                 factor.printFactor();
                 numMultiply += newFactor.multiply(factor);
                 index++;
-                System.out.println(index+":");
                 System.out.println("and i get this:");
                 newFactor.printFactor();
-//                newFactors.remove(factor);
             }
             numAdds += newFactor.sumUp(ord);
             factors.add(newFactor);
@@ -128,6 +117,71 @@ public class variableElimination {
         myWriter.write(roundedNumber + "," + numAdds + "," + numMultiply + "\n");
         System.out.println("finish");
     }
+
+    private boolean checkForBuiltIn(ArrayList<Factor> factors, ArrayList<Variable> evidence, Variable start, ArrayList<String> outcome, ArrayList<String> queryOutcome, FileWriter myWriter) throws IOException {
+        double probability = 0;
+        boolean flag = true;
+
+        for (Factor factor : factors) {
+            if (factor.getVariables().contains(start)) {
+                // Check if all evidence variables are contained in this factor
+                for (Variable v : evidence) {
+                    if (!factor.getVariables().contains(v)) {
+                        flag = false;
+                        break;
+                    }
+                }
+
+                if (flag) {
+                    String[][] table = factor.getTable();
+
+                    // Iterate through each row in the table
+                    for (int i = 1; i < table.length; i++) {
+                        String[] row = table[i];
+                        boolean match = true;
+
+                        // Check if the row matches the evidence and query outcomes
+                        for (int j = 0; j < factor.getVariables().size(); j++) {
+                            Variable var = factor.getVariables().get(j);
+
+                            // Check against evidence
+                            if (evidence.contains(var)) {
+                                int evidenceIndex = evidence.indexOf(var);
+                                if (!row[j].equals(outcome.get(evidenceIndex))) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+
+                            // Check against query outcome
+                            if (var.equals(start)) {
+                                int queryIndex = factor.getVariables().indexOf(start);
+                                if (!row[queryIndex].equals(queryOutcome.get(0))) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If row matches both evidence and query outcomes, add its probability
+                        if (match) {
+                            probability += Double.parseDouble(row[row.length - 1]);
+                        }
+                    }
+
+                    // Write the probability to the file
+                    if (probability > 0) {
+                        myWriter.write(probability+",0,0");
+                        myWriter.write("\n");
+                        return true; // If found, return true
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
 
     private static void toAddStart(ArrayList<Variable> toAdd, Variable start) {
         if (toAdd.contains(start)) {
