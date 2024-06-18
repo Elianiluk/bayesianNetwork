@@ -53,6 +53,81 @@ Modify `input.txt` to include queries:
 **Output:**
 
 Results are written to `output.txt`, with each line corresponding to `yes` or `no` for each query.
+- Example for output file:
+  ```bash
+  yes
+  no
+  0.28417,7,16
+  0.28417,7,16
+  0.84902,7,12
+  0.84902,5,8
+  ```
+
+  **XML FILE:**:
+  The main will take the details(Variables,Probabilitis and Connection between variables) from the XML file.
+  - Example for XML file:
+  ```bash
+  <NETWORK>
+  	<VARIABLE>
+  		<NAME>E</NAME>
+  		<OUTCOME>T</OUTCOME>
+  		<OUTCOME>F</OUTCOME>
+  	</VARIABLE>
+  
+  	<VARIABLE>
+  		<NAME>B</NAME>
+  		<OUTCOME>T</OUTCOME>
+  		<OUTCOME>F</OUTCOME>
+  	</VARIABLE>
+  
+  	<VARIABLE>
+  		<NAME>A</NAME>
+  		<OUTCOME>T</OUTCOME>
+  		<OUTCOME>F</OUTCOME>
+  	</VARIABLE>
+  
+  	<VARIABLE>
+  		<NAME>J</NAME>
+  		<OUTCOME>T</OUTCOME>
+  		<OUTCOME>F</OUTCOME>
+  	</VARIABLE>
+  
+  	<VARIABLE>
+  		<NAME>M</NAME>
+  		<OUTCOME>T</OUTCOME>
+  		<OUTCOME>F</OUTCOME>
+  	</VARIABLE>
+  
+  	<DEFINITION>
+  		<FOR>E</FOR>
+  		<TABLE>0.002 0.998</TABLE>
+  	</DEFINITION>
+  
+  	<DEFINITION>
+  		<FOR>B</FOR>
+  		<TABLE>0.001 0.999</TABLE>
+  	</DEFINITION>
+  
+  	<DEFINITION>
+  		<FOR>A</FOR>
+  		<GIVEN>E</GIVEN>
+  		<GIVEN>B</GIVEN>
+  		<TABLE>0.95 0.05 0.29 0.71 0.94 0.06 0.001 0.999</TABLE>
+  	</DEFINITION>
+  
+  	<DEFINITION>
+  		<FOR>J</FOR>
+  		<GIVEN>A</GIVEN>
+  		<TABLE>0.9 0.1 0.05 0.95</TABLE>
+  	</DEFINITION>
+  
+  	<DEFINITION>
+  		<FOR>M</FOR>
+  		<GIVEN>A</GIVEN>
+  		<TABLE>0.7 0.3 0.01 0.99</TABLE>
+  	</DEFINITION>
+  </NETWORK>
+  ```
 
 ## Example Queries
 
