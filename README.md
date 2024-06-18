@@ -1,4 +1,4 @@
-# Bayesian Networ
+# Bayesian Network
 
 ## Files Overview
 
