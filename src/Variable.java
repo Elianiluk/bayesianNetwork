@@ -9,13 +9,11 @@ class Variable {
     List<String> outcomes = new ArrayList<>();
     List<Variable> parents = new ArrayList<>();
     List<Variable> childs = new ArrayList<>();
-//    ArrayList<Double> table= new ArrayList<>();
     String [][] table;
     int numberOfOutcomes;
 
     Variable(String name) {
         this.name = name;
-//        this.table="";
         this.numberOfOutcomes = 0;
     }
 
@@ -44,23 +42,7 @@ class Variable {
     }
 
     void setTable(String[][] table) {
-//        String[] values = table.split(" ");
-//        for (String value : values) {
-//            this.table.add(Double.parseDouble(value));
-//        }
-//            String[] values = table.split(" ");
-//            int numRows = values.length / outcomes.size();
-//            this.table = new double[numRows][outcomes.size()];
-//
-//            int index = 0;
-//            for (int i = 0; i < numRows; i++) {
-//                for (int j = 0; j < outcomes.size(); j++) {
-//                    this.table[i][j] = Double.parseDouble(values[index++]);
-//                }
-//            }
-
         this.table=table;
-
     }
 
     @Override

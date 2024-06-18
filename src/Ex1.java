@@ -5,15 +5,12 @@ import java.util.*;
 
 public class Ex1 {
     public static void main(String[] args) throws IOException {
-        String in= "input.txt";
         BufferedReader file = new BufferedReader(new FileReader("input.txt"));
         String xmlName=file.readLine();
         ArrayList<Variable> variables=readFromXml(xmlName);
 
         FileWriter myWriter = new FileWriter("output.txt");
 
-//        for(int i=0;i<variables.size();i++)
-//            System.out.println(variables.get(i));
         String line;
         while ((line = file.readLine()) != null){
             if(isBayesBall(line)){
@@ -21,12 +18,7 @@ public class Ex1 {
                 ArrayList<Variable> evidence = new ArrayList<>();
                 ArrayList<Variable> isIn = new ArrayList<>();
                 extract_for_bayesBall(isIn,evidence,variables,line);
-//                System.out.println("Start: " + isIn.get(1));
-//                System.out.println("End: " + isIn.get(0));
-//                System.out.println("Evidence: " + evidence);
                 bayesBall bayesBallInstance = new bayesBall();
-                System.out.printf("The target is: "+isIn.get(0).name);
-                System.out.println("The start is: "+isIn.get(1).name);
                 if(bayesBallInstance.bayesBall(isIn.get(1),isIn.get(0),evidence) && bayesBallInstance.bayesBall(isIn.get(0),isIn.get(1),evidence)) {
                     System.out.println(isIn.get(1).name + " and " + isIn.get(0).name + " are independent");
                     myWriter.write("yes\n");
@@ -44,12 +36,6 @@ public class Ex1 {
                 ArrayList<Variable> order = new ArrayList<>();
                 ArrayList<String> queryOutcome = new ArrayList<>();
                 extract_for_elimination(isIn,evidence,order,variables,line,evidenceOutcome,queryOutcome);
-//                Collections.reverse(order);
-//                System.out.println("Start: " + isIn.get(0).name);
-//                System.out.println("evidence: " + evidence);
-//                System.out.println("evidenceOutcome: " + evidenceOutcome);
-//                System.out.println("order: " + order.get(0).name);
-//                System.out.println("query outcome "+ queryOutcome.get(0));
                 variableElimination variableEliminationInstance = new variableElimination();
                 variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence,evidenceOutcome,myWriter,queryOutcome);
             }
@@ -125,6 +111,8 @@ public class Ex1 {
         while(line.charAt(i)==' '){
             i++;
         }
+
+        //if the query starts contain ( and ) it means its variable elimination query, because it has P()
         return !line.contains("(") && !line.contains(")");
     }
 
@@ -132,6 +120,7 @@ public class Ex1 {
         // Clear previous evidence
         evidence.clear();
         isIn.clear();
+
         // Split the line into the left and right parts
         String[] parts = line.split("\\|");
         if (parts.length < 1) {
@@ -140,7 +129,7 @@ public class Ex1 {
         }
 
         String leftPart = parts[0]; // B-E
-        String rightPart = parts.length > 1 ? parts[1] : ""; // J=T
+        String rightPart = parts.length > 1 ? parts[1].trim() : ""; // J=T, K=F
 
         // Extract start and end variables from the left part
         String[] leftVariables = leftPart.split("-");
@@ -149,43 +138,38 @@ public class Ex1 {
             return;
         }
 
-        String startChar = leftVariables[0]; // B
-        String endChar = leftVariables[1]; // E
+        String startVar = leftVariables[0]; // B
+        String endVar = leftVariables[1]; // E
 
         // Find the start and end variables in the list
         for (Variable variable : variables) {
-            if (variable.name.equals(startChar)) {
+            if (variable.name.equals(startVar)) {
                 isIn.add(variable);
             }
-            if (variable.name.equals(endChar)) {
+        }
+        for (Variable variable : variables){
+            if (variable.name.equals(endVar)) {
                 isIn.add(variable);
             }
         }
 
         // Extract evidence from the right part if it exists
         if (!rightPart.isEmpty()) {
-            String[] evidencePairs = rightPart.split("=");
-            if (evidencePairs.length == 2) {
-                String evidenceChar = evidencePairs[0]; // J
-                for (Variable variable : variables) {
-                    if (variable.name.equals(evidenceChar) ) {
-                        evidence.add(variable);
-                    }
-                }
-            }
-            else{
-                for(int i=0;i<rightPart.length()-1;i++){
-                    if(rightPart.charAt(i+1)=='='){
-                        for (Variable variable : variables) {
-                            if (variable.name.charAt(0) == rightPart.charAt(i)) {
-                                evidence.add(variable);
-                            }
+            String[] evidencePairs = rightPart.split(","); // Split by comma to handle multiple evidence pairs
+            for (String evidencePair : evidencePairs) {
+                String[] nameValuePair = evidencePair.split("=");
+                if (nameValuePair.length == 2) {
+                    String evidenceVar = nameValuePair[0].trim(); // Evidence variable name
+                    for (Variable variable : variables) {
+                        if (variable.name.equals(evidenceVar)) {
+                            evidence.add(variable);
                         }
                     }
                 }
             }
         }
     }
+
     public static ArrayList<Variable> readFromXml(String line) {
         ArrayList<Variable> variables = new ArrayList<>();
         try {
@@ -269,21 +253,6 @@ public class Ex1 {
                     tablesMap.put(var, cptTable);
                 }
             }
-
-            // Example: print out the CPT table for each variable (for debugging purposes)
-//            for (Variable variable : variables) {
-//                String[][] cptTable = tablesMap.get(variable);
-//                if (cptTable != null) {
-//                    variable.setTable(cptTable);
-//                    System.out.println("Table of posibilities for Variable: " + variable.name);
-//                    printTable(variable.table);
-////                    System.out.println(variable.table);
-//                    System.out.println();
-//                } else {
-//                    System.err.println("No CPT table found for variable: " + variable.name);
-//                }
-//            }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -341,23 +310,8 @@ public class Ex1 {
         for (int i = 1; i < numGivenCombinations * numOutcomes + 1; i++) {
             double prob = definition.probabilities.get(i - 1);
             table[i][definition.givens.size() + 1] = String.format("%.5f", prob);
-//            table[i][definition.givens.size() + 1]=String.format(String.valueOf(prob));
         }
 
         return table;
-    }
-
-    private static void printTable(String[][] table) {
-        if (table == null) {
-            System.err.println("Error: Cannot print a null table.");
-            return;
-        }
-        // Print the header
-        for (String[] row : table) {
-            for (String cell : row) {
-                System.out.print(cell + "\t");
-            }
-            System.out.println();
-        }
     }
 }

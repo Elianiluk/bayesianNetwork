@@ -5,13 +5,26 @@ import java.util.Set;
 public class bayesBall {
     public boolean bayesBall(Variable start,Variable end, ArrayList<Variable> evidence) {
         ArrayList<Variable> visited=new ArrayList<>();
+
+        // casual chain
+//        if(end.parents.contains(start))
+//            return false;
+
+//        // common cause
+        for(Variable v:start.parents)
+            for(Variable v2:end.parents)
+                if(v==v2 && !evidence.contains(v))
+                    return false;
+
+//        //common effect
+        for(Variable v:start.childs)
+            for(Variable v2:end.childs)
+                if(v==v2 && evidence.contains(v))
+                    return false;
         return areIndependent(start,end,visited,false,evidence);
     }
     private static boolean areIndependent(Variable start, Variable end, ArrayList<Variable> visited, boolean comingFromChild, ArrayList<Variable> evidence) {
         visited.add(start);
-        System.out.println("now in: "+start.name);
-        for(Variable v:evidence)
-            System.out.println("evidence is: "+v.name);
 
         if(start==end)
             return false;

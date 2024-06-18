@@ -10,15 +10,13 @@ public class variableElimination {
         int numAdds = 0, numMultiply = 0;
         double probability = 0;
         ArrayList<Factor> factors = new ArrayList<>();
-        ArrayList<Variable> toAdd = new ArrayList<>(variables);
+        ArrayList<Variable> toAdd = new ArrayList<>();
         toAddStart(toAdd, start);
+        for (Variable v : evidence)
+            toAddStart(toAdd,v);
         bayesBall ball = new bayesBall();
 
         removeIndependentVariables(toAdd,start,ball,evidence);
-
-        for (Variable v : toAdd) {
-            System.out.println("name: " + v.name);
-        }
 
         for (Variable v : toAdd) {
             factors.add(new Factor(v));
@@ -36,7 +34,6 @@ public class variableElimination {
         for (Factor factor : factors) {
             factor.printFactor();
         }
-
 
         for (int i = 0; i < evidence.size(); i++) {
             Variable evi = evidence.get(i);
@@ -59,7 +56,6 @@ public class variableElimination {
             factor.printFactor();
         }
 
-        int index=1;
         for (Variable ord : order) {
             if (!toAdd.contains(ord)) {
                 continue;
@@ -74,8 +70,6 @@ public class variableElimination {
             factors.removeAll(newFactors);
 
             Factor newFactor = newFactors.get(0);
-            System.out.println(index+":");
-//            index++;
             newFactor.printFactor();
             newFactors.remove(newFactor);
             for (Factor factor : newFactors) {
@@ -84,7 +78,6 @@ public class variableElimination {
                 System.out.println("with:");
                 factor.printFactor();
                 numMultiply += newFactor.multiply(factor);
-                index++;
                 System.out.println("and i get this:");
                 newFactor.printFactor();
             }
@@ -94,20 +87,14 @@ public class variableElimination {
         }
 
         Factor newFactor=factors.get(0);
-        index++;
-        System.out.println(index+":");
         newFactor.printFactor();
         factors.remove(newFactor);
         if(!factors.isEmpty()){
             for(Factor fr: factors) {
                 numMultiply += newFactor.multiply(fr);
-                index++;
-                System.out.println(index+":");
                 fr.printFactor();
             }
         }
-//        Factor newFactor = factors.get(0);
-//        numAdds+= newFactor.marginalize();
         numAdds+=newFactor.normalize();
         newFactor.printFactor();
 
@@ -133,6 +120,16 @@ public class variableElimination {
                 }
 
                 if (flag) {
+                    boolean fl=true;
+                    for (Variable v : factor.getVariables()) {
+                        if(v!=start && !evidence.contains(v)){
+                            fl=false;
+                            break;
+                        }
+                    }
+                    if (!fl) {
+                        break;
+                    }
                     String[][] table = factor.getTable();
 
                     // Iterate through each row in the table
@@ -171,7 +168,8 @@ public class variableElimination {
 
                     // Write the probability to the file
                     if (probability > 0) {
-                        myWriter.write(probability+",0,0");
+                        String roundedNumber = String.format("%.5f", probability);
+                        myWriter.write(roundedNumber+",0,0");
                         myWriter.write("\n");
                         return true; // If found, return true
                     }
@@ -180,8 +178,6 @@ public class variableElimination {
         }
         return false;
     }
-
-
 
     private static void toAddStart(ArrayList<Variable> toAdd, Variable start) {
         if (toAdd.contains(start)) {

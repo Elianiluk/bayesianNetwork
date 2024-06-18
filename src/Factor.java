@@ -1,10 +1,8 @@
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class Factor {
     private List<Variable> variables;
     private String[][] table;
-    private boolean hadEvidence=false;
 
     public Factor(Variable variable) {
         this.variables = new ArrayList<>();
@@ -35,61 +33,41 @@ public class Factor {
 
     public int multiply(Factor other) {
         if(other.getVariables().size()>this.getVariables().size()){
-            return this.multiply2(other);
+            return this.otherMultiply(other);
         }
 
         int numMultiplies = 0;
 
         List<Variable> newVariables = new ArrayList<>();
         // Combine variables from both factors
-        if(other.getVariables().size()>this.getVariables().size()){
-//            newVariables = new ArrayList<>(other.variables);
-            for(int i=0;i<other.table[0].length-1;i++) {
-                String str = other.table[0][i];
-                for (Variable var : other.variables) {
-                    if (str.equals(var.name)) {
-                        newVariables.add(var);
-                        break;
-                    }
-                }
-            }
-            for (Variable var : this.variables) {
-                if (!newVariables.contains(var)) {
-                    newVariables.add(var);
-                    break;
-                }
-            }
-        }
-        else{
-            for(int i=0;i<this.table[0].length-1;i++){
-                String str=this.table[0][i];
-                for(Variable var: this.variables){
-                    if(str.equals(var.name))
-                        newVariables.add(var);
-                }
-            }
-            for (Variable var : other.variables) {
-                if (!newVariables.contains(var)) {
-                    newVariables.add(var);
-                }
-            }
-        }
-
-        ArrayList<Variable> lolOther=new ArrayList<>();
-        for(int i=0;i<other.table[0].length-1;i++){
-            String str=other.table[0][i];
-            for(Variable var: other.variables){
-                if(str.equals(var.name))
-                    lolOther.add(var);
-            }
-        }
-
-        ArrayList<Variable> lolThis=new ArrayList<>();
         for(int i=0;i<this.table[0].length-1;i++){
             String str=this.table[0][i];
             for(Variable var: this.variables){
                 if(str.equals(var.name))
-                    lolThis.add(var);
+                    newVariables.add(var);
+            }
+        }
+        for (Variable var : other.variables) {
+            if (!newVariables.contains(var)) {
+                newVariables.add(var);
+            }
+        }
+
+        ArrayList<Variable> otherVariables=new ArrayList<>();
+        for(int i=0;i<other.table[0].length-1;i++){
+            String str=other.table[0][i];
+            for(Variable var: other.variables){
+                if(str.equals(var.name))
+                    otherVariables.add(var);
+            }
+        }
+
+        ArrayList<Variable> thisVariables=new ArrayList<>();
+        for(int i=0;i<this.table[0].length-1;i++){
+            String str=this.table[0][i];
+            for(Variable var: this.variables){
+                if(str.equals(var.name))
+                    thisVariables.add(var);
             }
         }
 
@@ -129,8 +107,8 @@ public class Factor {
                 // Check if the current rows can be multiplied (consistent assignments for common variables)
                 boolean consistent = true;
                 for (Variable var : commonVariables) {
-                    int thisIndex = lolThis.indexOf(var);
-                    int otherIndex = lolOther.indexOf(var);
+                    int thisIndex = thisVariables.indexOf(var);
+                    int otherIndex = otherVariables.indexOf(var);
                     if (!thisLine[thisIndex].equals(otherLine[otherIndex])) {
                         consistent = false;
                         break;
@@ -145,9 +123,9 @@ public class Factor {
                     for (int k = 0; k < newVariables.size(); k++) {
                         Variable newVar = newVariables.get(k);
                         if (this.variables.contains(newVar)) {
-                            newRow[k] = thisLine[lolThis.indexOf(newVar)];
+                            newRow[k] = thisLine[thisVariables.indexOf(newVar)];
                         } else if (other.variables.contains(newVar)) {
-                            newRow[k] = otherLine[lolOther.indexOf(newVar)];
+                            newRow[k] = otherLine[otherVariables.indexOf(newVar)];
                         }
                     }
 
@@ -168,59 +146,42 @@ public class Factor {
         return numMultiplies;
     }
 
-    public int multiply2(Factor other) {
+    public int otherMultiply(Factor other) {
         int numMultiplies = 0;
 
         List<Variable> newVariables = new ArrayList<>();
         // Combine variables from both factors
-        if(other.getVariables().size()>this.getVariables().size()){
-//            newVariables = new ArrayList<>(other.variables);
-            for(int i=0;i<other.table[0].length-1;i++) {
-                String str = other.table[0][i];
-                for (Variable var : other.variables) {
-                    if (str.equals(var.name)) {
-                        newVariables.add(var);
-                        break;
-                    }
-                }
-            }
-            for (Variable var : this.variables) {
-                if (!newVariables.contains(var)) {
+        for(int i=0;i<other.table[0].length-1;i++) {
+            String str = other.table[0][i];
+            for (Variable var : other.variables) {
+                if (str.equals(var.name)) {
                     newVariables.add(var);
                     break;
                 }
             }
         }
-        else{
-            for(int i=0;i<this.table[0].length-1;i++){
-                String str=this.table[0][i];
-                for(Variable var: this.variables){
-                    if(str.equals(var.name))
-                        newVariables.add(var);
-                }
-            }
-            for (Variable var : other.variables) {
-                if (!newVariables.contains(var)) {
-                    newVariables.add(var);
-                }
+        for (Variable var : this.variables) {
+            if (!newVariables.contains(var)) {
+                newVariables.add(var);
+                break;
             }
         }
 
-        ArrayList<Variable> lolOther=new ArrayList<>();
+        ArrayList<Variable> otherVariables=new ArrayList<>();
         for(int i=0;i<other.table[0].length-1;i++){
             String str=other.table[0][i];
             for(Variable var: other.variables){
                 if(str.equals(var.name))
-                    lolOther.add(var);
+                    otherVariables.add(var);
             }
         }
 
-        ArrayList<Variable> lolThis=new ArrayList<>();
+        ArrayList<Variable> thisVariables=new ArrayList<>();
         for(int i=0;i<this.table[0].length-1;i++){
             String str=this.table[0][i];
             for(Variable var: this.variables){
                 if(str.equals(var.name))
-                    lolThis.add(var);
+                    thisVariables.add(var);
             }
         }
 
@@ -260,8 +221,8 @@ public class Factor {
                 // Check if the current rows can be multiplied (consistent assignments for common variables)
                 boolean consistent = true;
                 for (Variable var : commonVariables) {
-                    int thisIndex = lolOther.indexOf(var);
-                    int otherIndex = lolThis.indexOf(var);
+                    int thisIndex = otherVariables.indexOf(var);
+                    int otherIndex = thisVariables.indexOf(var);
                     if (!thisLine[thisIndex].equals(otherLine[otherIndex])) {
                         consistent = false;
                         break;
@@ -276,9 +237,9 @@ public class Factor {
                     for (int k = 0; k < newVariables.size(); k++) {
                         Variable newVar = newVariables.get(k);
                         if (other.variables.contains(newVar)) {
-                            newRow[k] = thisLine[lolOther.indexOf(newVar)];
+                            newRow[k] = thisLine[otherVariables.indexOf(newVar)];
                         } else if (this.variables.contains(newVar)) {
-                            newRow[k] = otherLine[lolThis.indexOf(newVar)];
+                            newRow[k] = otherLine[thisVariables.indexOf(newVar)];
                         }
                     }
 
@@ -318,9 +279,6 @@ public class Factor {
             newTable[0][j] = newVariables.get(j).name;
         }
         newTable[0][newTable[0].length - 1] = "pro";
-
-        // Index mapping for the given variable
-        int varIndex = this.variables.indexOf(var);
 
         // Map to store sums of probabilities for each assignment of newVariables
         Map<String, Double> sumMap = new LinkedHashMap<>();
@@ -409,10 +367,8 @@ public class Factor {
         if(!evi.outcomes.contains(value))
             return;
 
-        this.hadEvidence=true;
         ArrayList<Variable> newVariables = new ArrayList<>(this.variables);
         newVariables.remove(evi);
-//        Collections.reverse(newVariables);
         String [][] newTable = new String[(this.table.length/ evi.numberOfOutcomes)+1][this.table[0].length-1];
         for (int j = 0; j < newVariables.size(); j++) {
             newTable[0][j] = newVariables.get(j).name;
@@ -444,7 +400,7 @@ public class Factor {
             }
         }
         this.table = newTable;
-        Collections.reverse(newVariables);
+//        Collections.reverse(newVariables);
         this.variables = newVariables;
     }
 

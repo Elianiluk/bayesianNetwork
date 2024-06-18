@@ -1,6 +1,7 @@
 alarm_net.xml
-P(A=true|D=true) B-C
-P(B=true|A=true) C-D
-P(B=false|A=true) D-C
-P(C=false|A=false) B-D
-P(A=true|) B-C-D
+B-E|
+B-E|J=T
+P(B=T|J=T,M=T) A-E
+P(B=T|J=T,M=T) E-A
+P(J=T|B=T) A-E-M
+P(J=T|B=T) M-E-A
