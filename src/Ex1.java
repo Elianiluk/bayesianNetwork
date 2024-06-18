@@ -16,15 +16,15 @@ public class Ex1 {
             if(isBayesBall(line)){
                 System.out.println("bayes ball:");
                 ArrayList<Variable> evidence = new ArrayList<>();
-                ArrayList<Variable> isIn = new ArrayList<>();
-                extract_for_bayesBall(isIn,evidence,variables,line);
+                ArrayList<Variable> queryVariables = new ArrayList<>();
+                extract_for_bayesBall(queryVariables,evidence,variables,line);
                 bayesBall bayesBallInstance = new bayesBall();
-                if(bayesBallInstance.bayesBall(isIn.get(1),isIn.get(0),evidence) && bayesBallInstance.bayesBall(isIn.get(0),isIn.get(1),evidence)) {
-                    System.out.println(isIn.get(1).name + " and " + isIn.get(0).name + " are independent");
+                if(bayesBallInstance.bayesBall(queryVariables.get(1),queryVariables.get(0),evidence) && bayesBallInstance.bayesBall(queryVariables.get(0),queryVariables.get(1),evidence)) {
+                    System.out.println(queryVariables.get(1).name + " and " + queryVariables.get(0).name + " are independent");
                     myWriter.write("yes\n");
                 }
                 else {
-                    System.out.println(isIn.get(1).name + " and " + isIn.get(0).name + " are dependent");
+                    System.out.println(queryVariables.get(1).name + " and " + queryVariables.get(0).name + " are dependent");
                     myWriter.write("no\n");
                 }
             }
@@ -32,12 +32,12 @@ public class Ex1 {
                 System.out.println("Variable Elimination:");
                 ArrayList<Variable> evidence = new ArrayList<>();
                 ArrayList<String> evidenceOutcome = new ArrayList<>();
-                ArrayList<Variable> isIn = new ArrayList<>();
+                ArrayList<Variable> queryVariables = new ArrayList<>();
                 ArrayList<Variable> order = new ArrayList<>();
                 ArrayList<String> queryOutcome = new ArrayList<>();
-                extract_for_elimination(isIn,evidence,order,variables,line,evidenceOutcome,queryOutcome);
+                extract_for_elimination(queryVariables,evidence,order,variables,line,evidenceOutcome,queryOutcome);
                 variableElimination variableEliminationInstance = new variableElimination();
-                variableEliminationInstance.variableElimination(isIn.get(0),variables,order,evidence,evidenceOutcome,myWriter,queryOutcome);
+                variableEliminationInstance.variableElimination(queryVariables.get(0),order,evidence,evidenceOutcome,myWriter,queryOutcome);
             }
         }
         String line2;

@@ -6,7 +6,7 @@ import java.util.Comparator;
 
 public class variableElimination {
 
-    public void variableElimination(Variable start, ArrayList<Variable> variables, ArrayList<Variable> order, ArrayList<Variable> evidence, ArrayList<String> outcome, FileWriter myWriter,ArrayList<String> queryOutcome) throws IOException {
+    public void variableElimination(Variable start, ArrayList<Variable> order, ArrayList<Variable> evidence, ArrayList<String> outcome, FileWriter myWriter,ArrayList<String> queryOutcome) throws IOException {
         int numAdds = 0, numMultiply = 0;
         double probability = 0;
         ArrayList<Factor> factors = new ArrayList<>();
