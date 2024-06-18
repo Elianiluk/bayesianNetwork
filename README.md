@@ -1,12 +1,8 @@
-Certainly! Here's a polished README file that you can directly copy and paste into your GitHub repository:
-
----
-
-# Bayesian Network Analysis Toolkit
+# Bayesian Networ
 
 ## Files Overview
 
-- **Ex1.java**: Main class for processing Bayesian network queries from `input.txt` and writing results to `output.txt`.
+- **Ex1.java**: Main class for processing Bayesian network queries from `input.txt` and xml files and writing results to `output.txt`.
   
 - **Variables.java**: Defines the Variable class for Bayesian network nodes, managing outcomes and probability tables.
   
@@ -75,9 +71,5 @@ Standard Java libraries (`java.io.*`, `java.util.*`, `javax.xml.parsers.*`, `org
 
 ## Contributors
 
-- Developed by [Your Name] and [Collaborator Name].
-- Contact: [Your Email].
-
----
-
-This README provides a comprehensive overview of the Bayesian network analysis toolkit, including its components, usage instructions, example queries, dependencies, and contributors.
+- Developed by Elian Iluk.
+- Contact: elian10119@gmail.com.
