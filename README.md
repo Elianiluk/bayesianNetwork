@@ -39,6 +39,16 @@
 Modify `input.txt` to include queries:
 - For Variable Elimination: `P(variables | evidence)`
 - For Bayesian Ball: `B-variable1-variable2 | evidence`
+- Example for input file:
+  ```bash
+alarm_net.xml
+B-E|
+B-E|J=T
+P(B=T|J=T,M=T) A-E
+P(B=T|J=T,M=T) E-A
+P(J=T|B=T) A-E-M
+P(J=T|B=T) M-E-A
+  ```
 
 **Output:**
 
