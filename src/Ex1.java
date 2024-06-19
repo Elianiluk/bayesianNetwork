@@ -13,12 +13,14 @@ public class Ex1 {
 
         String line;
         while ((line = file.readLine()) != null){
-            if(isBayesBall(line)){
+            if(isBayesBall(line)){ //  check if the query is bayes ball query or variable elimination query
                 System.out.println("bayes ball:");
-                ArrayList<Variable> evidence = new ArrayList<>();
-                ArrayList<Variable> queryVariables = new ArrayList<>();
-                extract_for_bayesBall(queryVariables,evidence,variables,line);
+                ArrayList<Variable> evidence = new ArrayList<>(); // array list that contains the evidence variables
+                ArrayList<Variable> queryVariables = new ArrayList<>(); // array lost for query variables
+                extract_for_bayesBall(queryVariables,evidence,variables,line); // function that extract the query from the input text
                 bayesBall bayesBallInstance = new bayesBall();
+
+                // check if the 2 query variables are independent based on the bayes ball algorithm
                 if(bayesBallInstance.bayesBall(queryVariables.get(1),queryVariables.get(0),evidence) && bayesBallInstance.bayesBall(queryVariables.get(0),queryVariables.get(1),evidence)) {
                     System.out.println(queryVariables.get(1).name + " and " + queryVariables.get(0).name + " are independent");
                     myWriter.write("yes\n");
@@ -28,8 +30,10 @@ public class Ex1 {
                     myWriter.write("no\n");
                 }
             }
-            else{
+            else{ // the query is for variable elimination
                 System.out.println("Variable Elimination:");
+
+                // array list for the variables query, each one for another type of variable: evidence, query or order
                 ArrayList<Variable> evidence = new ArrayList<>();
                 ArrayList<String> evidenceOutcome = new ArrayList<>();
                 ArrayList<Variable> queryVariables = new ArrayList<>();
@@ -48,6 +52,7 @@ public class Ex1 {
         }
     }
 
+    // function that extract the query into the right array lists for the variable elimination
     private static void extract_for_elimination(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> order, ArrayList<Variable> variables, String line, ArrayList<String> evidenceOutcome, ArrayList<String> queryOutcome) {
         String[] parts = line.split(" ");
         String probabilityPart = parts[0];
@@ -75,7 +80,6 @@ public class Ex1 {
                 }
             }
         }
-
         // Add variables to evidence
         if (!rightOfPipe.isEmpty()) {
             String[] rightVariables = rightOfPipe.split(",");
@@ -90,7 +94,6 @@ public class Ex1 {
                 }
             }
         }
-
         // Add variables to order
         if (!orderPart.isEmpty()) {
             String[] orderVariables = orderPart.split("-");
@@ -105,7 +108,7 @@ public class Ex1 {
         }
     }
 
-
+    // function to check if the query is bayes ball query or variable elimination query
     public static boolean isBayesBall(String line){
         int i=0;
         while(line.charAt(i)==' '){
@@ -116,6 +119,7 @@ public class Ex1 {
         return !line.contains("(") && !line.contains(")");
     }
 
+    // function that extract the query into the right array lists for the bayes ball
     public static void extract_for_bayesBall(ArrayList<Variable> isIn, ArrayList<Variable> evidence, ArrayList<Variable> variables, String line) {
         // Clear previous evidence
         evidence.clear();
@@ -170,10 +174,12 @@ public class Ex1 {
         }
     }
 
+    // function to read the data from the XML file and create the variables according to its right hierarchy
     public static ArrayList<Variable> readFromXml(String line) {
         ArrayList<Variable> variables = new ArrayList<>();
         try {
-            File inputFile = new File(line);
+            String xmlFileName = line;
+            File inputFile = new File(xmlFileName);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(inputFile);
@@ -233,8 +239,6 @@ public class Ex1 {
                 }
             }
 
-            Map<Variable, String[][]> tablesMap = new HashMap<>();
-
             // Process each definition and store the CPT in the map
             for (Definition def : definitions) {
                 Variable var = null;
@@ -247,19 +251,16 @@ public class Ex1 {
                 String[][] cptTable = createTable(def, var);
                 assert var != null;
                 var.setTable(cptTable);
-                if (cptTable == null) {
+                if (cptTable == null)
                     System.err.println("Error: CPT table for variable " + def.forVar + " is null.");
-                } else {
-                    tablesMap.put(var, cptTable);
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return variables;
     }
 
+    // function to create the CPT for each variable and store it in the variable class
     private static String[][] createTable(Definition definition, Variable var) {
         if (var == null) {
             System.err.println("Error: Variable is null.");
@@ -311,7 +312,6 @@ public class Ex1 {
             double prob = definition.probabilities.get(i - 1);
             table[i][definition.givens.size() + 1] = String.format("%.5f", prob);
         }
-
         return table;
     }
 }

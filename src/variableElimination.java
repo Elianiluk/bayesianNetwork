@@ -1,24 +1,28 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
 public class variableElimination {
 
+    // function to calculate the
     public void variableElimination(Variable start, ArrayList<Variable> order, ArrayList<Variable> evidence, ArrayList<String> outcome, FileWriter myWriter,ArrayList<String> queryOutcome) throws IOException {
         int numAdds = 0, numMultiply = 0;
         double probability = 0;
-        ArrayList<Factor> factors = new ArrayList<>();
-        ArrayList<Variable> toAdd = new ArrayList<>();
-        toAddStart(toAdd, start);
+        ArrayList<Factor> factors = new ArrayList<>(); // array list for the factors
+        ArrayList<Variable> relevantVariables = new ArrayList<>(); // list for the relevant variables for the query
+
+        // add the ancestors of the query or evidence variables as they are important for the solution of the query
+        addRelevantVariables(relevantVariables, start);
         for (Variable v : evidence)
-            toAddStart(toAdd,v);
+            addRelevantVariables(relevantVariables,v);
         bayesBall ball = new bayesBall();
 
-        removeIndependentVariables(toAdd,start,ball,evidence);
+        // remove independent variables with the query variable
+        removeIndependentVariables(relevantVariables,start,ball,evidence);
 
-        for (Variable v : toAdd) {
+        // create the factors for the relevant variables
+        for (Variable v : relevantVariables) {
             factors.add(new Factor(v));
         }
 
@@ -26,12 +30,12 @@ public class variableElimination {
             Collections.reverse(v.getVariables());
         }
 
+        // check if the query is already in the one of the tables, if so return its value and end the program
         boolean check=checkForBuiltIn(factors,evidence,start,outcome,queryOutcome,myWriter);
         if (check)
             return;
 
-
-
+        // placing the outcomes of the evidence in the factors as we begin the variable elimination algorithm
         System.out.println("before delete");
         for (Factor factor : factors) {
             factor.printFactor();
@@ -58,19 +62,24 @@ public class variableElimination {
             factor.printFactor();
         }
 
+        // loop over the order variables and eliminate one at a time
         for (Variable ord : order) {
-            if (!toAdd.contains(ord)) {
+            // if the order variable isn't related to the query we can skip on him as there isn't factor that contains him
+            if (!relevantVariables.contains(ord)) {
                 continue;
             }
+
+            // get only the factors that relevant for the order variables which we want to eliminate
             ArrayList<Factor> newFactors = new ArrayList<>();
             for (Factor factor : factors) {
                 if (factor.getVariables().contains(ord)) {
                     newFactors.add(factor);
                 }
             }
-            sortFactors(newFactors);
-            factors.removeAll(newFactors);
+            sortFactors(newFactors); // sort the factors
+            factors.removeAll(newFactors); // remove the factors as we dont need them anymore
 
+            // multiplying the factors related to the order variable
             Factor newFactor = newFactors.get(0);
             newFactor.printFactor();
             newFactors.remove(newFactor);
@@ -83,37 +92,45 @@ public class variableElimination {
                 System.out.println("and i get this:");
                 newFactor.printFactor();
             }
+
+            //marginalize the new factor to eliminate the order variable
             numAdds += newFactor.sumUp(ord);
-            factors.add(newFactor);
+            factors.add(newFactor); // add the new factor
             newFactors.clear();
         }
 
         Factor newFactor=factors.get(0);
         newFactor.printFactor();
         factors.remove(newFactor);
+
+        // if there is more than one factor remain, we need to multiply them
         if(!factors.isEmpty()){
             for(Factor fr: factors) {
                 numMultiply += newFactor.multiply(fr);
                 fr.printFactor();
             }
         }
+
+        // normalize the new factor
         numAdds+=newFactor.normalize();
         newFactor.printFactor();
 
+        // extract the results from the final table and store it in the output file
         int index1=start.outcomes.indexOf(queryOutcome.get(0));
         probability = Double.parseDouble(newFactor.getTable()[index1+1][newFactor.getTable()[0].length - 1]);
         String roundedNumber = String.format("%.5f", probability);
-        myWriter.write(roundedNumber + "," + numAdds + "," + numMultiply + "\n");
+        myWriter.write(roundedNumber + "," + numAdds + "," + numMultiply);
+        myWriter.write("\n");
         System.out.println(roundedNumber + "," + numAdds + "," + numMultiply);
-        System.out.println("finish");
     }
 
-    private boolean checkForBuiltIn(ArrayList<Factor> factors, ArrayList<Variable> evidence, Variable start, ArrayList<String> outcome, ArrayList<String> queryOutcome, FileWriter myWriter) throws IOException {
+    // function to check if the query is already in one of the tables, if so return its value right away
+    private boolean checkForBuiltIn(ArrayList<Factor> factors, ArrayList<Variable> evidence, Variable queryVariable, ArrayList<String> outcome, ArrayList<String> queryOutcome, FileWriter myWriter) throws IOException {
         double probability = 0;
         boolean flag = true;
 
         for (Factor factor : factors) {
-            if (factor.getVariables().contains(start)) {
+            if (factor.getVariables().contains(queryVariable)) {
                 // Check if all evidence variables are contained in this factor
                 for (Variable v : evidence) {
                     if (!factor.getVariables().contains(v)) {
@@ -125,7 +142,7 @@ public class variableElimination {
                 if (flag) {
                     boolean fl=true;
                     for (Variable v : factor.getVariables()) {
-                        if(v!=start && !evidence.contains(v)){
+                        if(v!=queryVariable && !evidence.contains(v)){
                             fl=false;
                             break;
                         }
@@ -163,8 +180,8 @@ public class variableElimination {
                             }
 
                             // Check against query outcome
-                            if (var.equals(start)) {
-                                int queryIndex =thisVariables.indexOf(start);
+                            if (var.equals(queryVariable)) {
+                                int queryIndex =thisVariables.indexOf(queryVariable);
                                 if (!row[queryIndex].equals(queryOutcome.get(0))) {
                                     match = false;
                                     break;
@@ -194,20 +211,23 @@ public class variableElimination {
         return false;
     }
 
-    private static void toAddStart(ArrayList<Variable> toAdd, Variable start) {
-        if (toAdd.contains(start)) {
+    // function to add relevant variables
+    private static void addRelevantVariables(ArrayList<Variable> relevantVariables, Variable queryVariable) {
+        if (relevantVariables.contains(queryVariable)) {
             return;
         }
-        toAdd.add(start);
-        for (Variable parent : start.parents) {
-            toAddStart(toAdd, parent);
+        relevantVariables.add(queryVariable);
+        for (Variable parent : queryVariable.parents) {
+            addRelevantVariables(relevantVariables, parent);
         }
     }
 
-    private static void removeIndependentVariables(ArrayList<Variable> toRemove, Variable start, bayesBall ball,ArrayList<Variable> evidence) {
-        toRemove.removeIf(v -> ball.bayesBall(v, start, evidence));
+    // function to remove independent variables from the query variable
+    private static void removeIndependentVariables(ArrayList<Variable> toRemove, Variable queryVariable, bayesBall ball,ArrayList<Variable> evidence) {
+        toRemove.removeIf(v -> ball.bayesBall(v, queryVariable, evidence));
     }
 
+    // function to sort factors by their table size
     private static void sortFactors(ArrayList<Factor> factors) {
         factors.sort(new Comparator<Factor>() {
             @Override
