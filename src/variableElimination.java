@@ -22,13 +22,15 @@ public class variableElimination {
             factors.add(new Factor(v));
         }
 
+        for (Factor v : factors) {
+            Collections.reverse(v.getVariables());
+        }
+
         boolean check=checkForBuiltIn(factors,evidence,start,outcome,queryOutcome,myWriter);
         if (check)
             return;
 
-        for (Factor v : factors) {
-            Collections.reverse(v.getVariables());
-        }
+
 
         System.out.println("before delete");
         for (Factor factor : factors) {
@@ -102,6 +104,7 @@ public class variableElimination {
         probability = Double.parseDouble(newFactor.getTable()[index1+1][newFactor.getTable()[0].length - 1]);
         String roundedNumber = String.format("%.5f", probability);
         myWriter.write(roundedNumber + "," + numAdds + "," + numMultiply + "\n");
+        System.out.println(roundedNumber + "," + numAdds + "," + numMultiply);
         System.out.println("finish");
     }
 
@@ -137,9 +140,18 @@ public class variableElimination {
                         String[] row = table[i];
                         boolean match = true;
 
+                        ArrayList<Variable> thisVariables=new ArrayList<>();
+                        for(int s=0;s<table[0].length-1;s++){
+                            String str=table[0][s];
+                            for(Variable var: factor.getVariables()){
+                                if(str.equals(var.name))
+                                    thisVariables.add(var);
+                            }
+                        }
+
                         // Check if the row matches the evidence and query outcomes
-                        for (int j = 0; j < factor.getVariables().size(); j++) {
-                            Variable var = factor.getVariables().get(j);
+                        for (int j = 0; j < thisVariables.size(); j++) {
+                            Variable var = thisVariables.get(j);
 
                             // Check against evidence
                             if (evidence.contains(var)) {
@@ -152,7 +164,7 @@ public class variableElimination {
 
                             // Check against query outcome
                             if (var.equals(start)) {
-                                int queryIndex = factor.getVariables().indexOf(start);
+                                int queryIndex =thisVariables.indexOf(start);
                                 if (!row[queryIndex].equals(queryOutcome.get(0))) {
                                     match = false;
                                     break;
@@ -162,15 +174,18 @@ public class variableElimination {
 
                         // If row matches both evidence and query outcomes, add its probability
                         if (match) {
+                            for(Variable v : factor.getVariables())
+                                System.out.println(v.name);
                             probability += Double.parseDouble(row[row.length - 1]);
                         }
                     }
 
                     // Write the probability to the file
-                    if (probability > 0) {
+                    if (probability >= 0) {
                         String roundedNumber = String.format("%.5f", probability);
                         myWriter.write(roundedNumber+",0,0");
                         myWriter.write("\n");
+                        factor.printFactor();
                         return true; // If found, return true
                     }
                 }
